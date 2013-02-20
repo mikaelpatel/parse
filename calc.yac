@@ -1,0 +1,83 @@
+# $Id: calc.yac 5 2009-08-21 21:47:38Z Mikael Patel $
+# ----------------------------------------------------------------------
+# Name
+#   calc - simple expression grammar
+#  
+# Description:	
+#   Simple expression grammar for arithmetic expressions with priority
+#   and left-to-right ordering written in YACC meta grammar style. 
+#   Demonstrates alternative meta grammar and debugging of the grammar.
+#
+# Usage:
+#   parse calc.yac
+#
+# Copyright (C) 1984-1994, 2013, Mikael Patel.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General
+# Public License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+# Boston, MA  02111-1307  USA
+# ----------------------------------------------------------------------
+
+# Grammar in yacc meta language style
+
+!yacc
+
+calc : expr eoln @ display
+     ;
+expr : term expr0
+     ;
+expr0 : expr1 expr0
+      | empty
+      ;
+expr1 : '-' term @ sub
+      | '+' term @ add
+      ;
+term : fact term0 
+     ;
+term0 : '*' term @ mul
+      |  '/' term @ div
+      |  '%' term @ mod
+      |  empty 
+      ;
+fact : '(' expr ')'
+     |  integer @ push
+     ;
+!bnf
+
+# Dump the grammar (nb: the dump is always in bnf notation)
+
+?calc
+?expr
+?term
+?fact
+
+# Test the expression
+
+!calc
+
+1+
+1+(
+1+2
+1-2+3
+1+2*3/4+5
+
+!bnf
+
+# Back to bnf and test tracing
+
+trace on
+!calc
+1+2
+!bnf
+trace off

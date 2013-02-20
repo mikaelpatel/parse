@@ -1,0 +1,65 @@
+# $Id: items.bnf 5 2009-08-21 21:47:38Z Mikael Patel $
+# ----------------------------------------------------------------------
+# Name
+#   items - example of semantic sequences
+#  
+# Description:	
+#   Shows how to rewrite grammar for left-to-right ordering of semantics.
+#
+# Usage:
+#   parse items.bnf
+#
+# Copyright (C) 1984-1994, 2013, Mikael Patel.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General
+# Public License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+# Boston, MA  02111-1307  USA
+# ----------------------------------------------------------------------
+
+# Vanilla version of list of items
+
+!bnf
+<item> ::= <integer> @ push
+<items> ::= <item> , <items> @ next
+	 |  <item> @ last
+
+!items
+1,2,3,4
+!bnf
+
+# Left-to-right ordering of semantics
+
+!bnf
+<items> ::= <first_item> <next_items>
+	 |  <first_item>
+<first_item> ::= <item> @ first
+<next_items> ::= <next_item> <next_items>
+	      |  <next_item>
+<next_item> ::= , <item> @ next
+
+!items
+1,2,3,4
+!bnf
+
+# eXtended Backus Naur Form version
+
+!xbnf
+<items> ::= <first_item> <next_item*>
+<first_item> ::= <item> @ first
+<next_item> ::= , <item> @ next
+
+!items
+1,2,3,4
+!bnf
+

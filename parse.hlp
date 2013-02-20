@@ -1,0 +1,133 @@
+$Id: parse.hlp 5 2009-08-21 21:47:38Z Mikael Patel $
+
+Parse accepts four major types of meta grammars; Backus Naur Form (bnf), 
+Extended Backus Naur Form (ebnf), further eXtended Backus Naur Form (xbnf),
+and YACC (yacc). The two first forms (bnf and ebnf) are not further 
+explained. Below is a simple expression grammar:
+
+	!bnf
+	<calc> ::= <expr> <eoln> @ display
+	<expr> ::= <term> <expr0>
+	<expr0> ::= <expr1> <expr0>
+		 |  <empty> 
+	<expr1> ::= - <term> @ sub
+		  |  + <term> @ add
+	<term> ::= <fact> <term0> 
+	<term0> ::= * <term> @ mul
+		 |  / <term> @ div
+		 |  % <term> @ mod
+		 |  <empty> 
+	<fact> ::= ( <expr> ) 
+		|  <integer> @ push
+
+The selection of a meta grammar is written:
+
+	!<meta_grammar>
+
+Possible selections are:
+
+	!bnf
+	!ebnf
+	!xbnf
+	!yacc
+
+The meta grammar ebnf allows non terminal with semantic binding and 
+extension for zero or one, and zero or many.
+
+	!ebnf
+	[ <zero_or_one> ]
+	{ <zero_or_many> }
+
+The contained symbol must be a non-terminal due to binding of semantic
+action.
+
+The meta grammar xbnf allows a more compact notation for zero or one, 
+zero or many, and one or many. 
+
+	!xbnf
+	<zero_or_one?>
+	<zero_or_many*>
+	<one_or_many+>
+
+Last, yacc uses a even more compact form of meta grammer where non 
+terminals are written as idenitifiers and terminals as strings. Below 
+is an example of a simple expression grammar in yacc notation.
+
+	!yacc
+
+	calc : expr eoln @ display
+	     ;
+	expr : term expr0
+	     ;
+        expr0 : expr1 expr0
+	      | empty
+	      ;
+	expr1 : '-' term @ sub
+	      | '+' term @ add
+	      ;
+	term : fact term0 
+	     ;
+	term0 : '*' term @ mul
+	      |  '/' term @ div
+	      |  '%' term @ mod
+	      |  empty 
+	      ;
+	fact : '(' expr ')'
+	     |  integer @ push
+	     ;
+
+The suffix operators ?, +  and * may be used in yacc grammars as well. 
+This is an extension of the yacc meta grammar.
+
+The below commands turn on or off the tracing of the parse machine.
+
+	trace on  
+	trace off
+
+Timing of the parse machine may also be turned on or off. The timing
+is in milli-seconds (most grammars/statements should not exceed 1
+ms).  The file expr.bnf should an example of a highly backtracking 
+grammar.
+
+	timing on
+	timing off
+
+Use the below syntax to display the definition of a symbol; syntax, 
+parse or semantic function.
+
+	? <identifier>
+
+To test a language and start parsing with a new top symbol use the
+following command:
+
+	! <identifier>
+
+To return to the bnf parser write:
+
+	! bnf
+
+To return to command interpreter write:
+
+	! shell
+
+The below command may be given to compile the current grammar set
+to c definitions for compilation.
+	
+	compile
+
+This may also be done with the option "-c" to the program.
+
+	msdos> parse -c yacc.bnf > yacc.g
+
+The above command will load and compile the grammar file yacc.bnf.
+The file yacc.c may then be included into an application. This allows
+applications to contain static grammar definitions internally and 
+thus limit loading of grammar at run-time.
+
+A full example is available. See the makefile and the making of test.exe.
+The makefile will compile a grammar (test.bnf) to a c source file (test.g).
+The grammar c source is included by test.c which calls the parse machine.
+The source file test.c also contains a simple dictionary for variables
+and shows how the execution stack may be used to pass values during
+execution.
+

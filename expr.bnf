@@ -1,0 +1,144 @@
+# $Id: expr.bnf 5 2009-08-21 21:47:38Z Mikael Patel $
+# ----------------------------------------------------------------------
+# Name
+#   expr - simple expression grammar
+#  
+# Description:	
+#   Simple expression grammar for arithmetic expressions.
+#   Poor grammar due to high back-track factor. To reduce back-track
+#   the grammar may be factorized. Below the grammar is both factorized
+#   and execution ordering (left-to-right and right-to-left) is 
+#   demonstrated. How about reading some theory?
+#
+# Reference: 
+#   Alfred V. Aho, et al., "Compilers Principles, Techniques, and Tools", 
+#   Sec. 4.3 Syntax Analysis, pg. 178.       
+#
+# Usage:
+#   parse expr.bnf
+#
+# Copyright (C) 1984-1994, 2013, Mikael Patel.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General
+# Public License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+# Boston, MA  02111-1307  USA
+# ----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
+# Standard example of expression with backtrack for the masses
+# ----------------------------------------------------------------------
+
+!bnf
+
+<expr> ::= <term> + <expr> @ add
+	|  <term> - <expr> @ sub
+	|  <term>
+
+<term> ::= <fact> * <term> @ mul
+	|  <fact> / <term> @ div
+	|  <fact> % <term> @ mod
+	|  <fact>
+
+<fact> ::= ( <expr> )
+	|  <integer> @ value_print
+
+# Testing and timing of parse
+
+timing on
+!expr
+(1)
+((1))
+(((1)))
+!bnf
+timing off
+
+# ----------------------------------------------------------------------
+# Factorized version
+# ----------------------------------------------------------------------
+
+!xbnf
+
+<expr> ::= <term> <expr0?>
+
+<expr0> ::= + <expr> @ add
+	 |  - <expr> @ sub
+
+<term> ::= <fact> <term0?> 
+
+<term0> ::= * <term> @ mul
+	 |  / <term> @ div
+	 |  % <term> @ mod
+
+<fact> ::= ( <expr> )
+	 |  <integer> @ value_print
+
+# Testing and timing of parse
+
+timing on
+!expr
+(1)
+((1))
+(((1)))
+!bnf
+timing off
+
+# ----------------------------------------------------------------------
+# Single level grammar (right-to-left order)
+# ----------------------------------------------------------------------
+
+!xbnf
+
+<expr> ::= <fact> <term?>
+
+<term> ::= + <expr> @ add
+	|  - <expr> @ sub
+	|  * <expr> @ mul
+	|  / <expr> @ div
+	|  % <expr> @ mod
+
+<fact> ::= ( <expr> )
+	|  <integer> @ value_print
+
+# Testing and timing of parse
+
+timing on
+!expr
+1+2*3/4%5
+1+(2*3)/(4%5)
+!bnf
+timing off
+
+# ----------------------------------------------------------------------
+# Single level grammar (left-to-right order)
+# ----------------------------------------------------------------------
+
+!xbnf
+
+<expr> ::= <fact> <term*>
+<term> ::= - <fact> @ sub
+        |  + <fact> @ add
+	|  * <fact> @ mul
+	|  / <fact> @ div
+        |  % <fact> @ mod
+<fact> ::= ( <expr> ) 
+	|  <integer> @ value_print
+
+timing on
+!expr
+1+2*3/4%5
+1+(2*3)/(4%5)
+!bnf
+timing off
+
+# ----------------------------------------------------------------------

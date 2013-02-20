@@ -1,0 +1,83 @@
+# $Id: list.bnf 5 2009-08-21 21:47:38Z Mikael Patel $
+# ----------------------------------------------------------------------
+# Name
+#   list - list, sequence, grammar
+#  
+# Description:	
+#   Example of how to write list grammars. This is a very frequently
+#   occurring problem. Observe the ordering of semantics.
+#
+# Usage:
+#   parse list.bnf
+#
+# Copyright (C) 1984-1994, 2013, Mikael Patel.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+# 
+# You should have received a copy of the GNU Lesser General
+# Public License along with this library; if not, write to the
+# Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+# Boston, MA  02111-1307  USA
+# ----------------------------------------------------------------------
+
+# ----------------------------------------------------------------------
+# Right to left ordering: last next* list	
+# ----------------------------------------------------------------------
+
+!bnf
+<list> ::= ( <elements> ) @ list
+<elements> ::= <element> , <elements> @ next
+	    |  <element> @ last
+<element> ::= <identifier> @ value_print
+!list
+(x)
+(x,)
+(x,y)
+(x,y,z)
+!bnf
+
+# ----------------------------------------------------------------------
+# Left to right ordering: first next* list
+# ----------------------------------------------------------------------
+
+!xbnf
+<list> ::= ( <elements> ) @ list
+<elements> ::= <first_element> , <more_elements>
+	    |  <first_element>
+<first_element> ::= <element> @ first
+<more_elements> ::= <next_element> <more_elements>
+	         |  <next_element>
+<next_element> ::= <element> , @ next
+                |  <element> @ last
+!list
+(x)
+(x,)
+(x,y)
+(x,y,z)
+!bnf
+
+# --------------------------------------------------------------
+# Right to left ordering: first next* last? list	
+# Reduced intermediate stack size.
+# --------------------------------------------------------------
+
+!xbnf
+<list> ::= ( <first_element?> <next_element*> ) @ list
+<first_element> ::= <element> @ first
+<next_element> ::= , <element> @ next
+!list
+(x)
+(x,)
+(x,y)
+(x,y,z)
+!bnf
+
+# ----------------------------------------------------------------------
